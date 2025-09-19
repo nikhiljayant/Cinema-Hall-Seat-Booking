@@ -64,7 +64,7 @@ const CinemaSeatBooking = ({
           ))}
         </div>
 
-        <div className="w-full p-[10px] bg-gray-50 rounded-md flex gap-[30px] items-center justify-center text-sm">
+        <div className="mb-[15px] w-full p-[10px] bg-gray-50 rounded-md flex gap-[30px] items-center justify-center text-sm">
           <div className="flex items-center gap-[10px]">
             <div className="w-[30px] h-[30px] rounded-t-[12px] bg-blue-200 border border-blue-400" />
             <p>
@@ -99,6 +99,17 @@ const CinemaSeatBooking = ({
             <p>Booked</p>
           </div>
         </div>
+
+        <div className="mb-[15px] w-full py-[10px] px-[20px] bg-gray-50 rounded-md flex flex-col gap-[15px] font-semibold">
+          <p className="text-lg">Booking Summary</p>
+          <p className="text-md text-gray-600">
+            {bookedSeats.length > 0
+              ? `${bookedSeats.length} seats selected`
+              : "No seats selected"}
+          </p>
+        </div>
+
+        <button type="button" className="w-full py-[10px] text-center bg-gray-200 text-gray-600 rounded-md font-semibold text-[17px]">Select seats to book</button>
       </div>
     </div>
   );

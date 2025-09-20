@@ -1,20 +1,66 @@
+import React from "react";
+
 const CinemaSeatBooking = ({
   layout = {
     rows: 8,
     seatsPerRow: 12,
-    aislePosition: 5,
+    aislePosition: 6,
   },
   seatTypes = {
-    regular: { name: "Regular", price: 150, rows: [0, 1, 2] },
-    premium: { name: "Premium", price: 250, rows: [3, 4, 5] },
-    vip: { name: "VIP", price: 350, rows: [6, 7] },
+    regular: { name: "Regular", price: 150, rows: ["A", "B", "C"] },
+    premium: { name: "Premium", price: 250, rows: ["D", "E", "F"] },
+    vip: { name: "VIP", price: 350, rows: ["G", "H"] },
   },
-  bookedSeats = [],
+  bookedSeats = {
+    A: [1, 2],
+    B: [5, 6, 7],
+    C: [],
+    D: [3],
+  },
   currency = "₹",
   onBookingComplete = () => {},
   title = "Cinema Seat Booking",
   subTitle = "Select your seats",
 }) => {
+  const [seats, setSeats] = React.useState({});
+  const [currentlyBookedSeats, setCurrentlyBookedSeats] = React.useState({});
+
+  // In order to create seat layout in a proper structure
+  React.useEffect(() => {
+    const seatObj = {};
+    Array.from({ length: layout.rows || 0 }).forEach((_, rowIndex) => {
+      Array.from({ length: layout.seatsPerRow || 0 }).forEach(
+        (_, seatIndex) => {
+          if (seatObj[String.fromCharCode(rowIndex + 65)]) {
+            seatObj[String.fromCharCode(rowIndex + 65)]?.push(seatIndex + 1);
+          } else {
+            seatObj[String.fromCharCode(rowIndex + 65)] = [seatIndex + 1];
+          }
+        }
+      );
+    });
+
+    setSeats(seatObj);
+  }, []);
+
+  const handleBookOrRemoveSeats = (row, seatNo) => {
+    setCurrentlyBookedSeats((prev) => {
+      const updatedSeats = { ...prev };
+
+      if (updatedSeats[row]?.includes(seatNo)) {
+        updatedSeats[row] = updatedSeats[row].filter((seat) => seat !== seatNo);
+      } else {
+        if (updatedSeats[row]?.length > 0) {
+          updatedSeats[row] = [...updatedSeats[row], seatNo];
+        } else {
+          updatedSeats[row] = [seatNo];
+        }
+      }
+
+      return updatedSeats;
+    });
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
@@ -34,31 +80,35 @@ const CinemaSeatBooking = ({
 
         {/* Seats Layout */}
         <div className="mb-[30px] flex flex-col gap-[10px] items-center justify-center font-semibold">
-          {Array.from({ length: layout.rows }).map((_, rowIndex) => (
-            <div key={rowIndex} className="flex items-center gap-[30px]">
-              <span>{String.fromCharCode(rowIndex + 65)}</span>
+          {Object.keys(seats).map((rowKey) => (
+            <div key={rowKey} className="flex items-center gap-[30px]">
+              <span>{rowKey}</span>
               <div className="flex gap-[10px] items-center text-sm">
-                {Array.from({ length: layout.seatsPerRow }).map(
-                  (_, seatIndex) => (
-                    <div
-                      key={seatIndex}
-                      className={`w-[35px] h-[35px] rounded-t-[12px] flex items-center justify-center ${
-                        seatIndex === layout.aislePosition && "mr-[30px]"
-                      } ${
-                        seatTypes.regular.rows.includes(rowIndex) &&
-                        "bg-blue-200 border border-blue-400"
-                      } ${
-                        seatTypes.premium.rows.includes(rowIndex) &&
-                        "bg-violet-200 border border-violet-400"
-                      } ${
-                        seatTypes.vip.rows.includes(rowIndex) &&
-                        "bg-yellow-100 border border-yellow-400"
-                      }`}
-                    >
-                      {seatIndex + 1}
-                    </div>
-                  )
-                )}
+                {Object.values(seats[rowKey]).map((seatNo) => (
+                  <button
+                    key={seatNo}
+                    type="button"
+                    className={`cursor-pointer w-[35px] h-[35px] rounded-t-[12px] flex items-center justify-center ${
+                      seatNo === layout.aislePosition && "mr-[30px]"
+                    }
+                    disabled:bg-slate-300 disabled:border disabled:border-slate-600 disabled:cursor-not-allowed
+                    ${
+                      currentlyBookedSeats[rowKey]?.includes(seatNo)
+                        ? "bg-green-300 border border-green-600"
+                        : seatTypes.regular.rows.includes(rowKey)
+                        ? "bg-blue-200 border border-blue-400"
+                        : seatTypes.premium.rows.includes(rowKey)
+                        ? "bg-violet-200 border border-violet-400"
+                        : seatTypes.vip.rows.includes(rowKey)
+                        ? "bg-yellow-100 border border-yellow-400"
+                        : ""
+                    }`}
+                    disabled={bookedSeats[rowKey]?.includes(seatNo)}
+                    onClick={() => handleBookOrRemoveSeats(rowKey, seatNo)}
+                  >
+                    {seatNo}
+                  </button>
+                ))}
               </div>
             </div>
           ))}
@@ -102,14 +152,28 @@ const CinemaSeatBooking = ({
 
         <div className="mb-[15px] w-full py-[10px] px-[20px] bg-gray-50 rounded-md flex flex-col gap-[15px] font-semibold">
           <p className="text-lg">Booking Summary</p>
-          <p className="text-md text-gray-600">
-            {bookedSeats.length > 0
-              ? `${bookedSeats.length} seats selected`
-              : "No seats selected"}
-          </p>
+          {Object.keys(currentlyBookedSeats).length > 0 ? (
+            <div className="flex flex-wrap gap-[15px]">
+              {Object.keys(currentlyBookedSeats).map((row) =>
+                Object.values(currentlyBookedSeats[row]).map((seatNo) => (
+                  <p>
+                    {row}
+                    {seatNo}
+                  </p>
+                ))
+              )}
+            </div>
+          ) : (
+            <p className="text-md text-gray-600">No seats selected</p>
+          )}
         </div>
 
-        <button type="button" className="w-full py-[10px] text-center bg-gray-200 text-gray-600 rounded-md font-semibold text-[17px]">Select seats to book</button>
+        <button
+          type="button"
+          className="w-full py-[10px] text-center bg-gray-200 text-gray-600 rounded-md font-semibold text-[17px]"
+        >
+          Select seats to book
+        </button>
       </div>
     </div>
   );

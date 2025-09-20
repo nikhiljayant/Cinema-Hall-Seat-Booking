@@ -1,4 +1,6 @@
 import React from "react";
+import Seat from "./cinema-seat-booking/Seat";
+import SeatPricing from "./cinema-seat-booking/SeatPricing";
 
 const CinemaSeatBooking = ({
   layout = {
@@ -85,29 +87,16 @@ const CinemaSeatBooking = ({
               <span>{rowKey}</span>
               <div className="flex gap-[10px] items-center text-sm">
                 {Object.values(seats[rowKey]).map((seatNo) => (
-                  <button
+                  <Seat
                     key={seatNo}
-                    type="button"
-                    className={`cursor-pointer w-[35px] h-[35px] rounded-t-[12px] flex items-center justify-center ${
-                      seatNo === layout.aislePosition && "mr-[30px]"
-                    }
-                    disabled:bg-slate-300 disabled:border disabled:border-slate-600 disabled:cursor-not-allowed
-                    ${
-                      currentlyBookedSeats[rowKey]?.includes(seatNo)
-                        ? "bg-green-300 border border-green-600"
-                        : seatTypes.regular.rows.includes(rowKey)
-                        ? "bg-blue-200 border border-blue-400"
-                        : seatTypes.premium.rows.includes(rowKey)
-                        ? "bg-violet-200 border border-violet-400"
-                        : seatTypes.vip.rows.includes(rowKey)
-                        ? "bg-yellow-100 border border-yellow-400"
-                        : ""
-                    }`}
-                    disabled={bookedSeats[rowKey]?.includes(seatNo)}
+                    rowKey={rowKey}
+                    seatNo={seatNo}
+                    aislePosition={layout.aislePosition}
+                    currentlyBookedSeats={currentlyBookedSeats}
+                    seatTypes={seatTypes}
+                    bookedSeats={bookedSeats}
                     onClick={() => handleBookOrRemoveSeats(rowKey, seatNo)}
-                  >
-                    {seatNo}
-                  </button>
+                  />
                 ))}
               </div>
             </div>
@@ -115,29 +104,21 @@ const CinemaSeatBooking = ({
         </div>
 
         <div className="mb-[15px] w-full p-[10px] bg-gray-50 rounded-md flex gap-[30px] items-center justify-center text-sm">
-          <div className="flex items-center gap-[10px]">
-            <div className="w-[30px] h-[30px] rounded-t-[12px] bg-blue-200 border border-blue-400" />
-            <p>
-              Regular ({currency}
-              {seatTypes.regular.price})
-            </p>
-          </div>
-
-          <div className="flex items-center gap-[10px]">
-            <div className="w-[30px] h-[30px] rounded-t-[12px] bg-violet-200 border border-violet-400" />
-            <p>
-              Premium ({currency}
-              {seatTypes.premium.price})
-            </p>
-          </div>
-
-          <div className="flex items-center gap-[10px]">
-            <div className="w-[30px] h-[30px] rounded-t-[12px] bg-yellow-100 border border-yellow-400" />
-            <p>
-              VIP ({currency}
-              {seatTypes.vip.price})
-            </p>
-          </div>
+          <SeatPricing
+            seatType="Regular"
+            currency={currency}
+            price={seatTypes.regular.price}
+          />
+          <SeatPricing
+            seatType="Premium"
+            currency={currency}
+            price={seatTypes.premium.price}
+          />
+          <SeatPricing
+            seatType="VIP"
+            currency={currency}
+            price={seatTypes.vip.price}
+          />
 
           <div className="flex items-center gap-[10px]">
             <div className="w-[30px] h-[30px] rounded-t-[12px] bg-green-300 border border-green-600" />
@@ -150,6 +131,7 @@ const CinemaSeatBooking = ({
           </div>
         </div>
 
+        {/* Require Re-thought */}
         <div className="mb-[15px] w-full py-[10px] px-[20px] bg-gray-50 rounded-md flex flex-col gap-[15px] font-semibold">
           <p className="text-lg">Booking Summary</p>
           {Object.keys(currentlyBookedSeats).length > 0 ? (
